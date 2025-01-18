@@ -2,16 +2,12 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local sizeIncrement = 1
-local transparencyState = 1  -- Default transparency is 1 (opaque)
-local hitboxSize = 10  -- Starting size of the hitbox
-
--- Flags to track if the M, N, or Z key was pressed
+local hitboxSize = 10  -- Default hitbox size
 local mKeyPressed = false
 local nKeyPressed = false
 local zKeyPressed = false
 
--- Function to set CanCollide to false for all parts of a player's character
+-- Function to disable collisions for all parts of a player's character
 local function disablePlayerCollisions(player)
     if player.Character then
         for _, part in pairs(player.Character:GetChildren()) do
@@ -31,7 +27,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         mKeyPressed = true
         
         -- Increase the size of the HumanoidRootPart when M is pressed
-        hitboxSize = hitboxSize + sizeIncrement
+        hitboxSize = hitboxSize + 1
         
         -- Loop through all players' characters, but exclude the local player
         for _, v in pairs(Players:GetPlayers()) do
@@ -44,19 +40,20 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             end
         end
 
-        -- Send notification for hitbox size change
+        -- Send notification for hitbox size increase
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "Hitbox Size Increased",
             Text = "Hitbox size is now: " .. hitboxSize,
             Duration = 2
         })
+        
     elseif input.KeyCode == Enum.KeyCode.N and not nKeyPressed then
         -- Prevent multiple notifications for a single N key press
         nKeyPressed = true
         
         -- Decrease the size of the HumanoidRootPart when N is pressed
-        if hitboxSize > sizeIncrement then  -- Ensure it doesn't go below the starting size
-            hitboxSize = hitboxSize - sizeIncrement
+        if hitboxSize > 1 then  -- Ensure it doesn't go below the starting size
+            hitboxSize = hitboxSize - 1
         end
         
         -- Loop through all players' characters, but exclude the local player
@@ -76,12 +73,13 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             Text = "Hitbox size is now: " .. hitboxSize,
             Duration = 2
         })
+        
     elseif input.KeyCode == Enum.KeyCode.Z and not zKeyPressed then
         -- Prevent multiple notifications for a single Z key press
         zKeyPressed = true
         
         -- Toggle transparency between 0.8 and 1 when Z is pressed
-        transparencyState = (transparencyState == 1) and 0.8 or 1
+        local transparencyState = (hitboxSize == 10) and 0.8 or 1
         
         -- Loop through all players' characters, but exclude the local player
         for _, v in pairs(Players:GetPlayers()) do
@@ -111,15 +109,14 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Update loop to apply size and transparency continuously every 0.01 seconds
-RunService.Heartbeat:Connect(function()
-    for _, v in pairs(Players:GetPlayers()) do
-        if v ~= Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+-- Update loop to apply size and transparency continuously
+RunService.RenderStepped:Connect(function()
+    for _, v in next, game.Players:GetPlayers() do
+        if v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
             local humanoidRootPart = v.Character.HumanoidRootPart
 
-            -- Continuously apply the size and transparency to the HumanoidRootPart for other players
+            -- Continuously apply the size to the HumanoidRootPart for other players
             humanoidRootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
-            humanoidRootPart.Transparency = transparencyState
             
             -- Disable collisions for all parts of the other player's character
             disablePlayerCollisions(v)

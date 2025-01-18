@@ -11,6 +11,17 @@ local mKeyPressed = false
 local nKeyPressed = false
 local zKeyPressed = false
 
+-- Function to set CanCollide to false for all parts of a player's character
+local function disablePlayerCollisions(player)
+    if player.Character then
+        for _, part in pairs(player.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end
+
 -- Listen for key presses (M, N, Z)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end  -- Ignore inputs if the game has already processed them
@@ -27,8 +38,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if v ~= Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                 -- Set the new size of the HumanoidRootPart
                 v.Character.HumanoidRootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
-                -- Set CanCollide to false for the other players so you can walk through them
-                v.Character.HumanoidRootPart.CanCollide = false
+                
+                -- Disable collisions for all parts of the character
+                disablePlayerCollisions(v)
             end
         end
 
@@ -52,8 +64,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             if v ~= Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                 -- Set the new size of the HumanoidRootPart
                 v.Character.HumanoidRootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
-                -- Set CanCollide to false for the other players so you can walk through them
-                v.Character.HumanoidRootPart.CanCollide = false
+                
+                -- Disable collisions for all parts of the character
+                disablePlayerCollisions(v)
             end
         end
 
@@ -108,8 +121,8 @@ RunService.RenderStepped:Connect(function()
             humanoidRootPart.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
             humanoidRootPart.Transparency = transparencyState
             
-            -- Set CanCollide to false for other players so you can walk through them
-            humanoidRootPart.CanCollide = false
+            -- Disable collisions for all parts of the player's character
+            disablePlayerCollisions(v)
         end
     end
 end)
